@@ -3,7 +3,7 @@ import pyspark.sql.functions as F
 from pyspark.sql.window import Window
 from pyspark.sql.types import StringType
 
-#Function input - spark object, click data path, resolved data path
+# Function input - spark object, click data path, resolved data path
 # Function output - final spark dataframe# 
 def sample_function(spark, s3_clickstream_path, s3_login_path):
   df_clickstream =  spark.read.format("json").load(s3_clickstream_path)
@@ -41,7 +41,6 @@ def sample_function(spark, s3_clickstream_path, s3_login_path):
               .partitionBy('current_date','browser_id','user_id')\
               .orderBy(F.col('event_date_time').asc())
   
-  
   df = df.withColumn('date_diff',F.datediff(F.col('current_date'),F.col('login_date')))\
          .withColumn('logged_in',F.when((F.col('date_diff') == 0 ),F.lit(1))\
                                .otherwise(F.lit(0)))\
@@ -50,7 +49,6 @@ def sample_function(spark, s3_clickstream_path, s3_login_path):
         .withColumn('number_of_clicks',F.coalesce(F.col('click'),F.lit(0) ))\
         .filter('row_number == 1')\
         .select('current_date','browser_id','user_id','logged_in',F.col('client_page_url').alias('first_url'),\
-                F.col('number_of_clicks'),\
-              F.col('number_of_pageloads')) 
+                'number_of_clicks','number_of_pageloads')) 
               
   return df
