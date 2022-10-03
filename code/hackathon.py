@@ -45,6 +45,8 @@ def sample_function(spark, s3_clickstream_path, s3_login_path):
          .withColumn('logged_in',F.when((F.col('date_diff') == 0 ),F.lit(1))\
                                .otherwise(F.lit(0)))\
         .withColumn('row_number',F.rank().over(window_spec))\
+        .withColumn('user_id',F.when(('user_id is null'),F.lit(None))\
+                               .otherwise(F.col('user_id')))\
         .withColumn('number_of_pageloads',F.coalesce(F.col('pageload'),F.lit(0) )) \
         .withColumn('number_of_clicks',F.coalesce(F.col('click'),F.lit(0) ))\
         .filter('row_number == 1')\
